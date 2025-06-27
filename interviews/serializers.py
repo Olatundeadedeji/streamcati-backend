@@ -57,7 +57,7 @@ class InterviewSerializer(serializers.ModelSerializer):
         model = Interview
         fields = [
             'id', 'contact', 'contact_id', 'interview_round', 'interview_round_id',
-            'stage', 'status', 'current_question_index', 'started_at', 
+            'stage', 'status', 'current_question_index', 'form_data', 'started_at',
             'completed_at', 'updated_at', 'responses'
         ]
         read_only_fields = ['id', 'started_at', 'updated_at']

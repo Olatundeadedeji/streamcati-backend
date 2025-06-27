@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models
 from .models import Interview, Question, Response as InterviewResponse, InterviewRound
@@ -173,5 +174,53 @@ def start_interview_round(request, contact_id, round_number):
     except Exception as e:
         return Response(
             {'error': f'Failed to create interview: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submit_xform_data(request, interview_id):
+    """
+    Submit XForm data for a specific interview
+    """
+    try:
+        # Get the interview
+        interview = Interview.objects.get(
+            id=interview_id,
+            interviewer=request.user
+        )
+    except Interview.DoesNotExist:
+        return Response(
+            {'error': 'Interview not found or access denied'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Validate request data
+    form_data = request.data.get('form_data')
+    if not form_data:
+        return Response(
+            {'error': 'form_data is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        # Update interview with XForm data
+        interview.form_data = form_data
+        interview.status = request.data.get('status', 'completed')
+
+        # Set completion time if status is completed
+        if interview.status == 'completed':
+            interview.completed_at = timezone.now()
+
+        interview.save()
+
+        # Serialize and return updated interview
+        serializer = InterviewSerializer(interview, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to submit XForm data: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

@@ -157,6 +157,7 @@ class Interview(models.Model):
     stage = models.IntegerField(default=1)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_progress')
     current_question_index = models.IntegerField(default=0)
+    form_data = models.JSONField(null=True, blank=True, help_text='XForm data submitted for this interview')
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
