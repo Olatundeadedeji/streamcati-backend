@@ -18,3 +18,4 @@ tzdata==2025.2
 uritemplate==4.2.0
 gunicorn
 drf_spectacular
+django-cors-headers
